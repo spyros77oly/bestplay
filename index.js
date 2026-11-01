@@ -274,9 +274,9 @@ const PAGE = `<!doctype html>
         const code = b64url(JSON.stringify(cfg));
         const host = location.hostname + (location.port ? ':' + location.port : '');
         const origin = location.origin || (location.protocol + '//' + host);
-        const manifestUrl = `${origin}/${code}/manifest.json`;
-        const stremioLink = `stremio://${host}/${code}/manifest.json`;
-        const webLink = `https://web.stremio.com/#/addons?addon=${encodeURIComponent(manifestUrl)}`;
+        const manifestUrl = '\${origin}/' + code + '/manifest.json';
+        const stremioLink = 'stremio://' + host + '/' + code + '/manifest.json';
+        const webLink = 'https://web.stremio.com/#/addons?addon=' + encodeURIComponent(manifestUrl);
 
         linkbox.textContent = stremioLink;
         manifestbox.textContent = manifestUrl;
