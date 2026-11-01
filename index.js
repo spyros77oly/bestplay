@@ -159,107 +159,149 @@ async function subs(req, res) {
 app.get('/:cfg/subtitles/:type/:id/:extra.json', subs);
 app.get('/:cfg/subtitles/:type/:id.json', subs);
 
-const PAGE = `<!doctype html><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">
-<title>BestPlay</title>
-<style>
-  body { font: 16px system-ui; max-width: 620px; margin: 2rem auto; padding: 0 1rem; color: #111827; }
-  textarea, select, input { width: 100%; padding: .75rem .8rem; margin: .35rem 0 1rem; box-sizing: border-box; border: 1px solid #d1d5db; border-radius: 10px; font: inherit; }
-  button { padding: .8rem 1rem; border: none; border-radius: 10px; font: inherit; font-weight: 600; cursor: pointer; }
-  .primary { background: #111827; color: white; }
-  .secondary { background: #e5e7eb; color: #111827; }
-  .muted { color: #4b5563; font-size: .95rem; }
-  #result { display: none; margin-top: 1rem; border: 1px solid #e5e7eb; border-radius: 12px; padding: 1rem; background: #f9fafb; }
-  #result.show { display: block; }
-  .linkbox { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: .7rem .8rem; word-break: break-all; font-size: .95rem; margin: .5rem 0; }
-  .actions { display: flex; gap: .75rem; flex-wrap: wrap; }
-  .err { color: #b91c1c; background: #fee2e2; border: 1px solid #fecaca; border-radius: 10px; padding: .8rem .95rem; margin-bottom: 1rem; display: none; }
-  .err.show { display: block; }
-</style>
-<h2>BestPlay</h2>
-<div id=err class=err>Βάλε τουλάχιστον ένα addon URL για να δημιουργηθεί το install link.</div>
-<label>Τα addons σου (ένα URL ανά γραμμή, ρυθμισμένα με το debrid σου, χωρίς /manifest.json)</label>
-<textarea id=up rows=5 placeholder="https://torrentio.strem.fun/realdebrid=KEY\nhttps://comet.elfhosted.com/CONFIG"></textarea>
-<label>Γλώσσα υποτίτλων</label>
-<select id=sub><option value=el>Ελληνικά</option><option value=en>English</option><option value=sv>Svenska</option><option value=de>Deutsch</option><option value=fr>Français</option><option value=it>Italiano</option><option value=es>Español</option><option value=pt>Português</option><option value=nl>Nederlands</option><option value=tr>Türkçe</option><option value=pl>Polski</option></select>
-<label><input type=checkbox id=k4 style="width:auto"> Η συσκευή παίζει 4K/HDR</label>
-<button class=primary onclick=go()>Εγκατάσταση στο Stremio</button>
-<div id=result>
-  <div class=muted>Το τελικό Stremio install link:</div>
-  <div class=linkbox id=linkbox></div>
-  <div class=actions>
-    <button class=secondary id=copyBtn>Αντιγραφή</button>
-    <button class=secondary id=webBtn>Άνοιγμα στο Stremio Web</button>
+const PAGE = `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>BestPlay</title>
+  <style>
+    body { font: 16px system-ui; max-width: 620px; margin: 2rem auto; padding: 0 1rem; color: #111827; }
+    textarea, select, input { width: 100%; padding: .75rem .8rem; margin: .35rem 0 1rem; box-sizing: border-box; border: 1px solid #d1d5db; border-radius: 10px; font: inherit; }
+    button { padding: .8rem 1rem; border: none; border-radius: 10px; font: inherit; font-weight: 600; cursor: pointer; }
+    .primary { background: #111827; color: white; }
+    .secondary { background: #e5e7eb; color: #111827; }
+    .muted { color: #4b5563; font-size: .95rem; }
+    #result { display: none; margin-top: 1rem; border: 1px solid #e5e7eb; border-radius: 12px; padding: 1rem; background: #f9fafb; }
+    #result.show { display: block; }
+    .linkbox { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: .7rem .8rem; word-break: break-all; font-size: .95rem; margin: .5rem 0; }
+    .actions { display: flex; gap: .75rem; flex-wrap: wrap; }
+    .err { color: #b91c1c; background: #fee2e2; border: 1px solid #fecaca; border-radius: 10px; padding: .8rem .95rem; margin-bottom: 1rem; display: none; }
+    .err.show { display: block; }
+  </style>
+</head>
+<body>
+  <h2>BestPlay</h2>
+  <div id="err" class="err">Βάλε τουλάχιστον ένα addon URL για να δημιουργηθεί το install link.</div>
+  <label>Τα addons σου (ένα URL ανά γραμμή, ρυθμισμένα με το debrid σου, χωρίς /manifest.json)</label>
+  <textarea id="up" rows="5" placeholder="https://torrentio.strem.fun/realdebrid=KEY\nhttps://comet.elfhosted.com/CONFIG"></textarea>
+  <label>Γλώσσα υποτίτλων</label>
+  <select id="sub">
+    <option value="el">Ελληνικά</option>
+    <option value="en">English</option>
+    <option value="sv">Svenska</option>
+    <option value="de">Deutsch</option>
+    <option value="fr">Français</option>
+    <option value="it">Italiano</option>
+    <option value="es">Español</option>
+    <option value="pt">Português</option>
+    <option value="nl">Nederlands</option>
+    <option value="tr">Türkçe</option>
+    <option value="pl">Polski</option>
+  </select>
+  <label><input type="checkbox" id="k4" style="width:auto"> Η συσκευή παίζει 4K/HDR</label>
+  <button id="installBtn" class="primary">Εγκατάσταση στο Stremio</button>
+
+  <div id="result">
+    <div class="muted">Το τελικό Stremio install link:</div>
+    <div class="linkbox" id="linkbox"></div>
+    <div class="actions">
+      <button id="copyBtn" class="secondary" type="button">Αντιγραφή</button>
+      <button id="webBtn" class="secondary" type="button">Άνοιγμα στο Stremio Web</button>
+    </div>
+    <div class="muted" style="margin-top:.8rem;">Manifest URL:</div>
+    <div class="linkbox" id="manifestbox"></div>
   </div>
-  <div class=muted style="margin-top:.8rem;">Manifest URL:</div>
-  <div class=linkbox id=manifestbox></div>
-</div>
-<script>
-const l=(navigator.language||'en').split('-')[0];
-if([...sub.options].some(o=>o.value===l))sub.value=l;
 
-function showError(msg){
-  err.textContent = msg;
-  err.classList.add('show');
-  result.classList.remove('show');
-}
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const sub = document.getElementById('sub');
+      const k4 = document.getElementById('k4');
+      const up = document.getElementById('up');
+      const err = document.getElementById('err');
+      const result = document.getElementById('result');
+      const linkbox = document.getElementById('linkbox');
+      const manifestbox = document.getElementById('manifestbox');
+      const copyBtn = document.getElementById('copyBtn');
+      const webBtn = document.getElementById('webBtn');
+      const installBtn = document.getElementById('installBtn');
 
-function hideError(){
-  err.classList.remove('show');
-}
+      const l = (navigator.language || 'en').split('-')[0];
+      if ([...sub.options].some(o => o.value === l)) sub.value = l;
 
-function b64url(s){
-  return btoa(unescape(encodeURIComponent(s))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-}
+      function showError(msg) {
+        err.textContent = msg;
+        err.classList.add('show');
+        result.classList.remove('show');
+      }
 
-async function copyText(value){
-  try {
-    if (navigator.clipboard && window.isSecureContext) {
-      await navigator.clipboard.writeText(value);
-      return true;
-    }
-  } catch {}
-  const t = document.createElement('textarea');
-  t.value = value; document.body.appendChild(t); t.select();
-  try { document.execCommand('copy'); } catch {}
-  document.body.removeChild(t);
-  return true;
-}
+      function hideError() {
+        err.classList.remove('show');
+      }
 
-function go(){
-  const up = document.getElementById('up').value;
-  const raw = up.split('\n').map(s => s.trim()).filter(Boolean);
-  if (!raw.length) {
-    showError('Βάλε τουλάχιστον ένα URL addon για να δημιουργηθεί το install link.');
-    return;
-  }
-  hideError();
-  const cfg = { up: raw, sub: document.getElementById('sub').value, can4k: document.getElementById('k4').checked };
-  const code = b64url(JSON.stringify(cfg));
-  const host = location.hostname + (location.port ? ':' + location.port : '');
-  const origin = location.origin || (location.protocol + '//' + host);
-  const manifestUrl = `${origin}/${code}/manifest.json`;
-  const stremioLink = `stremio://${host}/${code}/manifest.json`;
-  const webLink = `https://web.stremio.com/#/addons?addon=${encodeURIComponent(manifestUrl)}`;
+      function b64url(s) {
+        return btoa(unescape(encodeURIComponent(s)))
+          .replace(/\+/g, '-')
+          .replace(/\//g, '_')
+          .replace(/=+$/, '');
+      }
 
-  linkbox.textContent = stremioLink;
-  manifestbox.textContent = manifestUrl;
-  copyBtn.onclick = () => copyText(stremioLink);
-  webBtn.onclick = () => window.open(webLink, '_blank');
-  result.classList.add('show');
+      async function copyText(value) {
+        try {
+          if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(value);
+            return true;
+          }
+        } catch {}
+        const t = document.createElement('textarea');
+        t.value = value;
+        document.body.appendChild(t);
+        t.select();
+        try { document.execCommand('copy'); } catch {}
+        document.body.removeChild(t);
+        return true;
+      }
 
-  try {
-    const a = document.createElement('a');
-    a.href = stremioLink;
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => a.remove(), 1200);
-  } catch (e) {}
-  setTimeout(() => {
-    try { window.location.href = stremioLink; } catch (e) {}
-  }, 250);
-}
-</script>`;
+      installBtn.addEventListener('click', () => {
+        const raw = up.value.split('\n').map(s => s.trim()).filter(Boolean);
+        if (!raw.length) {
+          showError('Βάλε τουλάχιστον ένα URL addon για να δημιουργηθεί το install link.');
+          return;
+        }
+        hideError();
+
+        const cfg = { up: raw, sub: sub.value, can4k: k4.checked };
+        const code = b64url(JSON.stringify(cfg));
+        const host = location.hostname + (location.port ? ':' + location.port : '');
+        const origin = location.origin || (location.protocol + '//' + host);
+        const manifestUrl = `${origin}/${code}/manifest.json`;
+        const stremioLink = `stremio://${host}/${code}/manifest.json`;
+        const webLink = `https://web.stremio.com/#/addons?addon=${encodeURIComponent(manifestUrl)}`;
+
+        linkbox.textContent = stremioLink;
+        manifestbox.textContent = manifestUrl;
+        copyBtn.onclick = () => copyText(stremioLink);
+        webBtn.onclick = () => window.open(webLink, '_blank');
+        result.classList.add('show');
+
+        try {
+          const a = document.createElement('a');
+          a.href = stremioLink;
+          a.style.display = 'none';
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => a.remove(), 1200);
+        } catch (e) {}
+
+        setTimeout(() => {
+          try { window.location.href = stremioLink; } catch (e) {}
+        }, 250);
+      });
+    });
+  </script>
+</body>
+</html>`;
+
 app.get(['/', '/configure', '/:cfg/configure'], (req, res) => res.type('html').send(PAGE));
 
 app.listen(PORT, () => console.log(`BestPlay on :${PORT}`));
